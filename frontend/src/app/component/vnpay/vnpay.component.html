@@ -1,0 +1,65 @@
+<!-- Sử dụng Tailwind CSS để tạo giao diện giống cổng thanh toán -->
+<div class="flex items-center justify-center  py-10">
+  <div class="w-full max-w-lg p-8 bg-white rounded-lg shadow-md border border-gray-200">
+    
+    <!-- Header của cổng thanh toán -->
+    <div class="text-center mb-6">
+      <!-- Logo VNPAY (bạn có thể thay bằng logo của mình) -->
+      <img src="assets/vnpay.jpg" alt="VNPAY Logo" class="h-16 mx-auto mb-4">
+      <h2 class="text-2xl font-semibold text-center text-gray-800">Xác nhận thanh toán</h2>
+    </div>
+
+    <!-- 
+      Sử dụng *ngIf và async pipe để hiển thị khi dữ liệu order$ đã sẵn sàng 
+    -->
+    <ng-container *ngIf="order$ | async as order; else loadingOrder">
+      <!-- Thông tin tóm tắt đơn hàng -->
+      <div class="space-y-3 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
+        <p class="flex justify-between">
+          <span class="text-gray-600">Mã đơn hàng:</span>
+          <span class="font-medium text-gray-900">#{{ order.orderId }}</span>
+        </p>
+        <p class="flex justify-between">
+          <span class="text-gray-600">Người nhận:</span>
+          <span class="font-medium text-gray-900">{{ order.recipientName }}</span>
+        </p>
+        <p class="flex justify-between">
+          <span class="text-gray-600">Giao đến:</span>
+          <span class="font-medium text-gray-900 truncate w-2/3 text-right">{{ order.shippingAddress }}</span>
+        </p>
+        <hr>
+        <p class="flex justify-between text-lg font-bold">
+          <span class="text-gray-700">Tổng tiền thanh toán:</span>
+          <!-- Định dạng tiền tệ VND -->
+          <span class="text-blue-600">{{ order.totalAmount | currency:'VND':'symbol':'1.0-0' }}</span>
+        </p>
+      </div>
+
+      <!-- Các nút bấm giả lập -->
+      <div class="space-y-4">
+        <button 
+          (click)="fakePaySuccess()" 
+          [disabled]="isLoading"
+          class="w-full bg-blue-600 text-white py-3 px-4 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 transition duration-300 ease-in-out rounded-md font-semibold">
+          {{ isLoading ? 'Đang xử lý...' : 'Thanh toán' }}
+        </button>
+        
+        <button 
+          (click)="cancelPayment()" 
+          [disabled]="isLoading"
+          class="w-full bg-gray-200 text-gray-700 py-3 px-4 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50 transition duration-300 ease-in-out rounded-md font-semibold">
+          Hủy thanh toán
+        </button>
+      </div>
+
+    </ng-container>
+
+    <!-- Template hiển thị khi đang tải thông tin đơn hàng -->
+    <ng-template #loadingOrder>
+      <p class="text-center text-gray-500 py-10">
+        Đang tải thông tin đơn hàng, vui lòng chờ...
+      </p>
+    </ng-template>
+
+  </div>
+</div>
