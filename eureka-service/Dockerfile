@@ -1,11 +1,12 @@
-# STAGE 1: Build ứng dụng với Maven
+# Stage 1: Build
 FROM eclipse-temurin:21-jdk AS build
-
 WORKDIR /app
 
-# Copy các file cần thiết cho Maven
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
+
+# Thêm dòng này để cấp quyền thực thi cho file mvnw
+RUN chmod +x mvnw 
 
 # Tải dependencies (tận dụng cache)
 RUN ./mvnw dependency:go-offline
@@ -14,14 +15,12 @@ RUN ./mvnw dependency:go-offline
 COPY src ./src
 RUN ./mvnw clean install -DskipTests
 
-# STAGE 2: Tạo image chạy ứng dụng (nhẹ hơn)
+# Stage 2: Release
 FROM eclipse-temurin:21-jre
-
 WORKDIR /app
 
-# Lấy file .jar từ stage build
-ARG JAR_FILE=target/*.jar
-COPY --from=build /app/${JAR_FILE} app.jar
+# Copy file JAR đã build từ stage 1
+COPY --from=build /app/target/*.jar app.jar
 
-# Chạy ứng dụng
+EXPOSE 8761
 ENTRYPOINT ["java", "-jar", "app.jar"]

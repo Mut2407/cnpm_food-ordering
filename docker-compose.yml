@@ -1,19 +1,43 @@
-version: '3'
 services:
+  # === Các service hạ tầng (MySQL, Zipkin) ===
+  mysql-db: 
+    image: mysql:8.0 
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword 
+      MYSQL_DATABASE: cnpm
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+    ports:
+      - "3307:3306" 
+    networks:
+      - spring-cloud-network
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - spring-cloud-network
+
+  # === Các service Kafka (Zookeeper, Kafka) ===
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
-      - 22181:2181
+      - "22181:2181"
+    networks:
+      - spring-cloud-network
 
   kafka:
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
     ports:
-      - 29092:29092
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -21,3 +45,115 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - spring-cloud-network
+
+  # === Các service ứng dụng (Microservices) ===
+  eureka-server:
+    build: ./eureka-service
+    image: mut2407/cnpm-eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - zipkin
+    networks:
+      - spring-cloud-network
+
+  api-gateway:
+    build: ./api-gateway
+    image: mut2407/cnpm-api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eureka-server
+      - zipkin
+    networks:
+      - spring-cloud-network
+
+  user-service:
+    build: ./user-service
+    image: mut2407/cnpm-user-service
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      # Đảm bảo service kết nối đúng tên của DB container (mysql-db)
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/cnpm
+    depends_on:
+      - mysql-db
+      - eureka-server
+      - zipkin
+    networks:
+      - spring-cloud-network
+
+  restaurant-service:
+    build: ./restaurant-service
+    image: mut2407/cnpm-restaurant-service
+    container_name: restaurant-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/cnpm
+    depends_on:
+      - mysql-db # Thay đổi phụ thuộc
+      - eureka-server
+      - zipkin
+    networks:
+      - spring-cloud-network
+
+  order-service:
+    build: ./order-service
+    image: mut2407/cnpm-order-service
+    container_name: order-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/cnpm
+    depends_on:
+      - mysql-db # Thay đổi phụ thuộc
+      - eureka-server
+      - zipkin
+    networks:
+      - spring-cloud-network
+
+  notification-service:
+    build: ./notification-service
+    image: mut2407/cnpm-notification-service
+    container_name: notification-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      - eureka-server
+      - zipkin
+      - kafka
+    networks:
+      - spring-cloud-network
+
+  # === Service Frontend ===
+  frontend-service:
+    build: ./frontend
+    image: mut2407/cnpm-frontend
+    container_name: frontend-service
+    ports:
+      - "4200:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - spring-cloud-network
+
+# === Định nghĩa Network chung ===
+networks:
+  spring-cloud-network:
+    driver: bridge
