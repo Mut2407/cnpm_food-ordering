@@ -1,18 +1,16 @@
-name: CI/CD - User Service
+name: CI/CD - Order Service
 
 on:
   push:
     branches: [ "main" ]
-    # Chỉ chạy workflow này khi có thay đổi trong thư mục user-service
     paths:
-      - 'user-service/**'
+      - 'order-service/**' 
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'user-service/**'
+      - 'order-service/**' 
 
 jobs:
-  # JOB 1: Build và Test (Phần CI)
   build-and-test:
     runs-on: ubuntu-latest
     steps:
@@ -27,16 +25,11 @@ jobs:
         cache: 'maven'
 
     - name: Build and Test with Maven
-      run: mvn -B clean install --file user-service/pom.xml
+      run: mvn -B clean install --file order-service/pom.xml 
 
-  # JOB 2: Build và Push Docker Image (Phần CD)
   build-and-push-docker:
-    # Yêu cầu job 'build-and-test' phải chạy xong
     needs: build-and-test
-    
-    # Chỉ chạy job này khi push lên nhánh main (không chạy cho Pull Request)
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -54,7 +47,7 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: ./user-service  
-        file: ./user-service/Dockerfile
+        context: ./order-service  
+        file: ./order-service/Dockerfile 
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/cnpm-user-service:latest 
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/cnpm-order-service:latest 
