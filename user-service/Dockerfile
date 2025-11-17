@@ -7,15 +7,18 @@ COPY mvnw pom.xml ./
 RUN mkdir -p ./.mvn/wrapper
 COPY .mvn/wrapper/maven-wrapper.properties ./.mvn/wrapper/
 
-# Copy mã nguồn
-COPY src ./src
-
 # Cấp quyền thực thi và sửa lỗi line ending
 RUN chmod +x mvnw
 RUN sed -i 's/\r$//' mvnw 
 
-# === SỬA LỖI SHA-256 ===
-# Bỏ qua 'dependency:go-offline' và build trực tiếp
+# ---- THÊM BƯỚC NÀY ----
+# Tải dependencies (tận dụng cache và gỡ lỗi)
+RUN ./mvnw dependency:go-offline
+
+# Copy mã nguồn
+COPY src ./src
+
+# Build ứng dụng
 RUN ./mvnw clean install -DskipTests
 
 # Stage 2: Release
