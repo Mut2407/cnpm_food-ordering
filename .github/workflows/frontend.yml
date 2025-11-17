@@ -64,7 +64,6 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ./frontend  
-        # Giả định bạn đã thêm Dockerfile và nginx.conf vào thư mục frontend
         file: ./frontend/Dockerfile 
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/cnpm-frontend:latest
