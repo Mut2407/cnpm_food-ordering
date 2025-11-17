@@ -5,7 +5,8 @@ WORKDIR /app
 # Copy các file cần thiết cho Maven
 COPY mvnw pom.xml ./
 RUN mkdir -p ./.mvn/wrapper
-COPY .mvn/wrapper/maven-wrapper.properties ./.mvn/wrapper/
+# Thành dòng này
+COPY maven-wrapper.properties ./.mvn/wrapper/
 
 # Thêm dòng này để cấp quyền thực thi cho file mvnw
 RUN chmod +x mvnw
