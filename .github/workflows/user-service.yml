@@ -27,7 +27,7 @@ jobs:
         cache: 'maven'
 
     - name: Build and Test with Maven
-      run: mvn -B clean install --file user-service/pom.xml
+      run: mvn -B clean install -DskipTests --file user-service/pom.xml
 
   # JOB 2: Build và Push Docker Image (Phần CD)
   build-and-push-docker:

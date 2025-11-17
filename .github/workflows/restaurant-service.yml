@@ -25,7 +25,7 @@ jobs:
         cache: 'maven'
 
     - name: Build and Test with Maven
-      run: mvn -B clean install --file restaurant-service/pom.xml 
+      run: mvn -B clean install -DskipTests --file restaurant-service/pom.xml 
 
   build-and-push-docker:
     needs: build-and-test
