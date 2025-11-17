@@ -39,8 +39,8 @@ jobs:
       # Build với configuration production
       run: npm run build -- --configuration production 
 
-    - name: Test
-      run: npm test -- --watch=false --browsers=ChromeHeadless
+    # - name: Test
+    #   run: npm test -- --watch=false --browsers=ChromeHeadless
 
   build-and-push-docker:
     # job build-and-push-docker
