@@ -51,7 +51,7 @@ services:
   # === Các service ứng dụng (Microservices) ===
   eureka-server:
     build: ./eureka-service
-    image: mut2407/cnpm-eureka-server
+    image: ramos24/cnpm-eureka-server
     container_name: eureka-server
     ports:
       - "8761:8761"
@@ -64,7 +64,7 @@ services:
 
   api-gateway:
     build: ./api-gateway
-    image: mut2407/cnpm-api-gateway
+    image: ramos24/cnpm-api-gateway
     container_name: api-gateway
     ports:
       - "8080:8080"
@@ -78,7 +78,7 @@ services:
 
   user-service:
     build: ./user-service
-    image: mut2407/cnpm-user-service
+    image: ramos24/cnpm-user-service
     container_name: user-service
     ports:
       - "8081:8081"
@@ -95,7 +95,7 @@ services:
 
   restaurant-service:
     build: ./restaurant-service
-    image: mut2407/cnpm-restaurant-service
+    image: ramos24/cnpm-restaurant-service
     container_name: restaurant-service
     ports:
       - "8082:8082"
@@ -111,7 +111,7 @@ services:
 
   order-service:
     build: ./order-service
-    image: mut2407/cnpm-order-service
+    image: ramos24/cnpm-order-service
     container_name: order-service
     ports:
       - "8083:8083"
@@ -127,7 +127,7 @@ services:
 
   notification-service:
     build: ./notification-service
-    image: mut2407/cnpm-notification-service
+    image: ramos24/cnpm-notification-service
     container_name: notification-service
     ports:
       - "8084:8084"
@@ -144,7 +144,7 @@ services:
   # === Service Frontend ===
   frontend-service:
     build: ./frontend
-    image: mut2407/cnpm-frontend
+    image: ramos24/cnpm-frontend
     container_name: frontend-service
     ports:
       - "4200:80"

@@ -1,31 +1,25 @@
-# STAGE 1: Build ứng dụng với Maven
+# Stage 1: Build
 FROM eclipse-temurin:21-jdk AS build
-
 WORKDIR /app
 
 # Copy các file cần thiết cho Maven
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
-
-RUN chmod +x mvnw
-
-RUN sed -i 's/\r$//' mvnw
-
-# Tải dependencies (tận dụng cache)
-RUN ./mvnw dependency:go-offline
-
-# Copy source code và build
 COPY src ./src
+
+# Cấp quyền thực thi và sửa lỗi line ending
+RUN chmod +x mvnw
+RUN sed -i 's/\r$//' mvnw 
+
+# === SỬA LỖI SHA-256 ===
+# Bỏ qua 'dependency:go-offline' và build trực tiếp
 RUN ./mvnw clean install -DskipTests
 
-# STAGE 2: Tạo image chạy ứng dụng (nhẹ hơn)
+# Stage 2: Release
 FROM eclipse-temurin:21-jre
-
 WORKDIR /app
 
-# Lấy file .jar từ stage build
-ARG JAR_FILE=target/*.jar
-COPY --from=build /app/${JAR_FILE} app.jar
+# Copy file JAR đã build từ stage 1
+COPY --from=build /app/target/*.jar app.jar
 
-# Chạy ứng dụng
 ENTRYPOINT ["java", "-jar", "app.jar"]
