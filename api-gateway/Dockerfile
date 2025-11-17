@@ -10,7 +10,7 @@ COPY mvnw pom.xml ./
 # Tải dependencies (tận dụng cache)
 RUN ./mvnw dependency:go-offline
 
-RUN chmod +x mvnw
+RUN sed -i 's/\r$//' mvnw
 
 # Copy source code và build
 COPY src ./src

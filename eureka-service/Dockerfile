@@ -6,7 +6,7 @@ COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 
 # Thêm dòng này để cấp quyền thực thi cho file mvnw
-RUN chmod +x mvnw 
+RUN sed -i 's/\r$//' mvnw
 
 # Tải dependencies (tận dụng cache)
 RUN ./mvnw dependency:go-offline
