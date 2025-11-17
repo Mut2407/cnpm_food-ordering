@@ -3,8 +3,11 @@ FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
 # Copy các file cần thiết cho Maven
-COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
+RUN mkdir -p ./.mvn/wrapper
+COPY .mvn/wrapper/maven-wrapper.properties ./.mvn/wrapper/
+
+# Copy mã nguồn
 COPY src ./src
 
 # Cấp quyền thực thi và sửa lỗi line ending
