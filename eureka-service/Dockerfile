@@ -2,28 +2,28 @@
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
-# Copy các file cần thiết cho Maven
+# Copy Maven wrapper and config
 COPY mvnw pom.xml ./
 COPY .mvn ./.mvn
 
-# Thêm dòng này để cấp quyền thực thi cho file mvnw
-RUN chmod +x mvnw
+# Fix permissions + CRLF issues
+RUN chmod +x mvnw \
+    && sed -i 's/\r$//' mvnw \
+    && sed -i 's/\r$//' .mvn/wrapper/maven-wrapper.properties
 
-RUN sed -i 's/\r$//' mvnw
+# Download dependencies
+RUN ./mvnw dependency:go-offline -B
 
-# Tải dependencies (tận dụng cache)
-RUN ./mvnw dependency:go-offline
-
-# Copy source code và build
+# Copy source code
 COPY src ./src
-RUN ./mvnw clean install -DskipTests
+
+# Build application
+RUN ./mvnw clean install -DskipTests -B
 
 # Stage 2: Release
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Copy file JAR đã build từ stage 1
 COPY --from=build /app/target/*.jar app.jar
 
-EXPOSE 8761
 ENTRYPOINT ["java", "-jar", "app.jar"]
