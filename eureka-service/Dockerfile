@@ -2,14 +2,14 @@
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
-# Copy Maven wrapper and config
-COPY mvnw pom.xml ./
-COPY .mvn ./.mvn
+# Copy Maven wrapper correctly
+COPY mvnw .
+COPY pom.xml .
+COPY .mvn/wrapper ./.mvn/wrapper
 
-# Fix permissions + CRLF issues
-RUN chmod +x mvnw \
-    && sed -i 's/\r$//' mvnw \
-    && sed -i 's/\r$//' .mvn/wrapper/maven-wrapper.properties
+# Fix CRLF and BOM issues
+RUN sed -i 's/\r$//' mvnw \
+    && sed -i '1s/^\xef\xbb\xbf//' .mvn/wrapper/maven-wrapper.properties
 
 # Download dependencies
 RUN ./mvnw dependency:go-offline -B
