@@ -1,31 +1,13 @@
-# e.g. copy this into eureka-service/Dockerfile (and same for other services)
-# Stage 1: build
-FROM eclipse-temurin:21-jdk AS build
-WORKDIR /app
-
-# Copy only wrapper + pom + mvnw first (better cache)
-COPY mvnw .
-COPY pom.xml .
-COPY .mvn/wrapper .mvn/wrapper
-
-# Fix permissions, CRLF and BOM in wrapper files (safe)
-RUN chmod +x mvnw \
-    && sed -i 's/\r$//' mvnw \
-    && sed -i '1s/^\xef\xbb\xbf//' .mvn/wrapper/maven-wrapper.properties || true
-
-# Download dependencies
-RUN ./mvnw -B dependency:go-offline
-
-# Copy source and build
+# Multi-stage Dockerfile for eureka-service (Spring Boot)
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+WORKDIR /workspace
+COPY mvnw pom.xml ./
+COPY .mvn .mvn
 COPY src ./src
-RUN ./mvnw -B -DskipTests clean package
+RUN chmod +x mvnw && ./mvnw -B clean package -DskipTests
 
-# Stage 2: runtime
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-
-# Copy jar from build stage
-# If your service produces a single jar in target, this will work
-COPY --from=build /app/target/*.jar app.jar
-
+COPY --from=build /workspace/target/*.jar app.jar
+EXPOSE 8761
 ENTRYPOINT ["java","-jar","/app/app.jar"]

@@ -1,30 +1,20 @@
-# STAGE 1: Build ứng dụng Angular
-FROM node:24-alpine AS build
-
+# --- Giai đoạn 1: Build Angular ---
+FROM node:18-alpine as build
 WORKDIR /app
-
-# Copy package.json và package-lock.json
-COPY package.json package-lock.json ./
-
-# Cài đặt dependencies
-RUN npm ci
-
-# Copy toàn bộ source code của frontend
+COPY package*.json ./
+RUN npm install
 COPY . .
+# File angular.json build ra "dist/frontend"
+RUN npm run build
 
-# Build ứng dụng cho production
-# Dựa trên angular.json, output path là "dist/frontend/browser"
-RUN npm run build -- --configuration production
-
-# STAGE 2: Serve ứng dụng bằng Nginx
+# --- Giai đoạn 2: Chạy Nginx ---
 FROM nginx:alpine
 
-# Copy kết quả build từ stage 1 vào thư mục phục vụ web của Nginx
-# (Angular 17 builder lưu kết quả trong thư mục con 'browser')
-COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
+# SỬA 1: Copy từ thư mục build đúng của Angular 17 (dist/frontend/browser)
+COPY --from=build /app/dist/frontend/browser/ /usr/share/nginx/html/
 
-# Copy file cấu hình Nginx (quan trọng để Angular routing hoạt động)
+# SỬA 2: SỬA LỖI ĐƯỜNG DẪN
+# (Đã xóa "./frontend/" ở đầu vì Docker build context đã là /frontend rồi)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
 EXPOSE 80
